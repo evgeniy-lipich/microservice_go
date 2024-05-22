@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package note_v1;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+option go_package = "https://github.com/evgeniy-lipich/microservice_go/grpc/pkg/note_v1;note_v1";
+
+// описываем сервис маршрутов
+service NoteV1 {
+  rpc Create (CreateRequest) returns (CreateResponse);
+  rpc Get (GetRequest) returns (GetResponse);
+  rpc List (ListRequest) returns (ListResponse);
+  rpc Update (UpdateRequest) returns (google.protobuf.Empty);
+  rpc Delete (DeleteRequest) returns (google.protobuf.Empty);
+}
+
+// декларация NoteInfo
+message NoteInfo {
+  string title = 1;
+  string content = 2;
+  string author = 3;
+  bool is_public = 4;
+}
+
+// декларация Note
+message Note {
+  int64 id = 1;
+  NoteInfo info = 2;
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+// декларация UpdateNoteInfo
+message UpdateNoteInfo {
+  google.protobuf.StringValue title = 1;
+  google.protobuf.StringValue context = 2;
+  google.protobuf.StringValue author = 3;
+  google.protobuf.BoolValue is_public = 4;
+}
+
+// декларация createRequest
+message CreateRequest {
+  NoteInfo info = 1;
+}
+
+// декларация createResponse
+message CreateResponse {
+  int64 id = 1;
+}
+
+// декларация getRequest
+message GetRequest {
+  int64 id = 1;
+}
+
+// декларация getResponse
+message GetResponse {
+  Note note = 1;
+}
+
+// декларация listRequest
+message ListRequest {
+  int64 limit = 1;
+  int64 offset = 2;
+}
+
+// декларация listResponse
+message ListResponse {
+  repeated Note notes = 1;
+}
+
+// декларация updateRequest
+message UpdateRequest {
+  int64 id = 1;
+  UpdateNoteInfo info = 2;
+}
+
+// декларация deleteRequest
+message DeleteRequest {
+  int64 id = 1;
+}
