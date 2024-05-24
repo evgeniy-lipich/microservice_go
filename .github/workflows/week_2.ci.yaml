@@ -1,9 +1,5 @@
 name: CI
 
-debug:
-  description: 'enable debug mode'
-  default: false
-
 on:
   push:
     branches: [ main, master ]
