@@ -73,7 +73,12 @@ func getNote(id int64) (Note, error) {
 	if err != nil {
 		log.Fatal("Failed to get note:", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err = resp.Body.Close()
+		if err != nil {
+			log.Println(err.Error())
+		}
+	}()
 
 	if resp.StatusCode == http.StatusOK {
 		return Note{}, err
