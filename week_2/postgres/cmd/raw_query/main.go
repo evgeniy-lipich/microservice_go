@@ -22,7 +22,7 @@ func main() {
 	defer con.Close(ctx)
 
 	// делаем запрос на создание записи в таблице note
-	res, err := con.Exec(ctx, "INSERT INTO notes (title, body) VALUES ($1, $2)", gofakeit.City(), gofakeit.Address().Street)
+	res, err := con.Exec(ctx, "INSERT INTO note (title, body) VALUES ($1, $2)", gofakeit.City(), gofakeit.Address().Street)
 	if err != nil {
 		log.Fatalf("failed to insert note: %v", err)
 	}
