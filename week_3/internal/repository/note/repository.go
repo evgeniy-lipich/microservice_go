@@ -2,12 +2,14 @@ package note
 
 import (
 	"context"
+
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v4/pgxpool"
+
 	"github.com/evgeniy-lipich/microservice_go/week_3/internal/repository"
 	"github.com/evgeniy-lipich/microservice_go/week_3/internal/repository/note/converter"
 	"github.com/evgeniy-lipich/microservice_go/week_3/internal/repository/note/model"
 	desc "github.com/evgeniy-lipich/microservice_go/week_3/pkg/note_v1"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 const (

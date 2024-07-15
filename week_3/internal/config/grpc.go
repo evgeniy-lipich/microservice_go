@@ -1,9 +1,10 @@
 package config
 
 import (
-	"errors"
 	"net"
 	"os"
+
+	"github.com/pkg/errors"
 )
 
 const (
@@ -12,7 +13,7 @@ const (
 )
 
 type GRPCConfig interface {
-	Address() string
+	GRPCAddress() string
 }
 
 type grpcConfig struct {
@@ -37,6 +38,6 @@ func NewGRPCConfig() (GRPCConfig, error) {
 	}, nil
 }
 
-func (cfg *grpcConfig) Address() string {
+func (cfg *grpcConfig) GRPCAddress() string {
 	return net.JoinHostPort(cfg.host, cfg.port)
 }

@@ -2,16 +2,18 @@ package main
 
 import (
 	"context"
-	"github.com/evgeniy-lipich/microservice_go/week_3/internal/config"
-	"github.com/evgeniy-lipich/microservice_go/week_3/internal/repository"
-	"github.com/evgeniy-lipich/microservice_go/week_3/internal/repository/note"
+	"log"
+	"net"
 
-	desc "github.com/evgeniy-lipich/microservice_go/week_3/pkg/note_v1"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"log"
-	"net"
+
+	desc "github.com/evgeniy-lipich/microservice_go/week_3/pkg/note_v1"
+
+	"github.com/evgeniy-lipich/microservice_go/week_3/internal/config"
+	"github.com/evgeniy-lipich/microservice_go/week_3/internal/repository"
+	"github.com/evgeniy-lipich/microservice_go/week_3/internal/repository/note"
 )
 
 type server struct {
@@ -64,7 +66,7 @@ func main() {
 		log.Fatalf("failed to get pg config: %v", err)
 	}
 
-	lis, err := net.Listen("tcp", grpcConfig.Address())
+	lis, err := net.Listen("tcp", grpcConfig.GRPCAddress())
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
