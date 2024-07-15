@@ -30,6 +30,7 @@ func NewRepository(db *pgxpool.Pool) repository.NoteRepository {
 
 func (r *repo) Create(ctx context.Context, info *desc.NoteInfo) (int64, error) {
 	builder := sq.Insert(tableName).
+		PlaceholderFormat(sq.Dollar).
 		Columns(titleColumn, contentColumn).
 		Values(info.Title, info.Content).
 		Suffix("RETURNING id")
@@ -50,6 +51,7 @@ func (r *repo) Create(ctx context.Context, info *desc.NoteInfo) (int64, error) {
 
 func (r *repo) Get(ctx context.Context, id int64) (*desc.Note, error) {
 	builder := sq.Select(idColumn, titleColumn, contentColumn, createdAtColumn, updatedAtColumn).
+		PlaceholderFormat(sq.Dollar).
 		From(tableName).
 		Where(sq.Eq{idColumn: id}).
 		Limit(1)

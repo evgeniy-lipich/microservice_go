@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"github.com/evgeniy-lipich/microservice_go/week_3/internal/config"
 	"github.com/evgeniy-lipich/microservice_go/week_3/internal/repository"
 	"github.com/evgeniy-lipich/microservice_go/week_3/internal/repository/note"
@@ -15,12 +14,6 @@ import (
 	"net"
 )
 
-var configPath string
-
-func init() {
-	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
-}
-
 type server struct {
 	desc.UnimplementedNoteV1Server
 	noteRepository repository.NoteRepository
@@ -32,9 +25,11 @@ func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.Cre
 		return nil, err
 	}
 
-	log.Printf("inserted note with id: '%d'", id)
+	log.Printf("inserted note with id: %d", id)
 
-	return &desc.CreateResponse{Id: id}, nil
+	return &desc.CreateResponse{
+		Id: id,
+	}, nil
 }
 
 func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
@@ -43,7 +38,7 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 		return nil, err
 	}
 
-	log.Printf("id: %d, title: %s, body: %s, created_at: %v, updated_at: %v\n", noteObj.Id)
+	log.Printf("id: %d, title: %s, body: %s, created_at: %v, updated_at: %v\n", noteObj.Id, noteObj.Info.Title, noteObj.Info.Content, noteObj.CreatedAt, noteObj.UpdatedAt)
 
 	return &desc.GetResponse{
 		Note: noteObj,
@@ -51,12 +46,10 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 }
 
 func main() {
-	// считываем параметр с консоли
-	flag.Parse()
 	ctx := context.Background()
 
-	// считываем переменные окружения
-	err := config.Load(configPath)
+	// Считываем переменные окружения
+	err := config.Load(".env")
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
@@ -76,10 +69,10 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	// создаем пул соединений с базой данных
+	// Создаем пул соединений с базой данных
 	pool, err := pgxpool.Connect(ctx, pgConfig.DSN())
 	if err != nil {
-		log.Fatalf("failed to connect: %v", err)
+		log.Fatalf("failed to connect to database: %v", err)
 	}
 	defer pool.Close()
 
@@ -91,7 +84,7 @@ func main() {
 
 	log.Printf("server listening at %v", lis.Addr())
 
-	if err := s.Serve(lis); err != nil {
+	if err = s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }
