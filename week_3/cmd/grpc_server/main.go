@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+
 	"log"
 	"net"
 
@@ -9,12 +10,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	desc "github.com/evgeniy-lipich/microservice_go/week_3/pkg/note_v1"
-
 	noteAPI "github.com/evgeniy-lipich/microservice_go/week_3/internal/api/note"
 	"github.com/evgeniy-lipich/microservice_go/week_3/internal/config"
 	noteRepository "github.com/evgeniy-lipich/microservice_go/week_3/internal/repository/note"
 	noteService "github.com/evgeniy-lipich/microservice_go/week_3/internal/service/note"
+	desc "github.com/evgeniy-lipich/microservice_go/week_3/pkg/note_v1"
 )
 
 func main() {
