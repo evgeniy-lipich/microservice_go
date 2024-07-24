@@ -2,22 +2,24 @@ package app
 
 import (
 	"context"
+	"log"
+
 	"github.com/evgeniy-lipich/microservice_go/week_3/internal/api/note"
+	"github.com/evgeniy-lipich/microservice_go/week_3/internal/client/db"
+	"github.com/evgeniy-lipich/microservice_go/week_3/internal/client/db/pg"
 	"github.com/evgeniy-lipich/microservice_go/week_3/internal/closer"
 	"github.com/evgeniy-lipich/microservice_go/week_3/internal/config"
 	"github.com/evgeniy-lipich/microservice_go/week_3/internal/repository"
 	noteRepository "github.com/evgeniy-lipich/microservice_go/week_3/internal/repository/note"
 	"github.com/evgeniy-lipich/microservice_go/week_3/internal/service"
 	noteService "github.com/evgeniy-lipich/microservice_go/week_3/internal/service/note"
-	"github.com/jackc/pgx/v4/pgxpool"
-	"log"
 )
 
 type serviceProvider struct {
 	pgConfig   config.PGConfig
 	grpcConfig config.GRPCConfig
 
-	pgPool         *pgxpool.Pool
+	dbClient       db.Client
 	noteRepository repository.NoteRepository
 
 	noteService service.NoteService
@@ -42,7 +44,7 @@ func (s *serviceProvider) GetPGConfig() config.PGConfig {
 	return s.pgConfig
 }
 
-func (s *serviceProvider) GetGRPCConfig() config.GRPCConfig {
+func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	if s.grpcConfig == nil {
 		cfg, err := config.NewGRPCConfig()
 		if err != nil {
@@ -55,47 +57,44 @@ func (s *serviceProvider) GetGRPCConfig() config.GRPCConfig {
 	return s.grpcConfig
 }
 
-func (s *serviceProvider) GetPgPool(ctx context.Context) *pgxpool.Pool {
-	if s.pgPool == nil {
-		pool, err := pgxpool.Connect(ctx, s.GetPGConfig().DSN())
+func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
+	if s.dbClient == nil {
+		cl, err := pg.New(ctx, s.GetPGConfig().DSN())
 		if err != nil {
-			log.Fatalf("failed to connect to database: %v", err)
+			log.Fatalf("failed to create db client: %v", err)
 		}
 
-		err = pool.Ping(ctx)
+		err = cl.DB().Ping(ctx)
 		if err != nil {
 			log.Fatalf("ping error: %s", err.Error())
 		}
-		closer.Add(func() error {
-			pool.Close()
-			return nil
-		})
+		closer.Add(cl.Close)
 
-		s.pgPool = pool
+		s.dbClient = cl
 	}
 
-	return s.pgPool
+	return s.dbClient
 }
 
-func (s *serviceProvider) GetNoteRepository(ctx context.Context) repository.NoteRepository {
+func (s *serviceProvider) NoteRepository(ctx context.Context) repository.NoteRepository {
 	if s.noteRepository == nil {
-		s.noteRepository = noteRepository.NewRepository(s.GetPgPool(ctx))
+		s.noteRepository = noteRepository.NewRepository(s.DBClient(ctx))
 	}
 
 	return s.noteRepository
 }
 
-func (s *serviceProvider) GetNoteService(ctx context.Context) service.NoteService {
+func (s *serviceProvider) NoteService(ctx context.Context) service.NoteService {
 	if s.noteService == nil {
-		s.noteService = noteService.NewService(s.GetNoteRepository(ctx))
+		s.noteService = noteService.NewService(s.NoteRepository(ctx))
 	}
 
 	return s.noteService
 }
 
-func (s *serviceProvider) GetNoteImpl(ctx context.Context) *note.Implementation {
+func (s *serviceProvider) NoteImpl(ctx context.Context) *note.Implementation {
 	if s.noteImpl == nil {
-		s.noteImpl = note.NewImplementation(s.GetNoteService(ctx))
+		s.noteImpl = note.NewImplementation(s.NoteService(ctx))
 	}
 
 	return s.noteImpl
