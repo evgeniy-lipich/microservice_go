@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"github.com/evgeniy-lipich/microservice_go/week_3/internal/client/db/transaction"
 	"log"
 
 	"github.com/evgeniy-lipich/microservice_go/week_3/internal/api/note"
@@ -20,6 +21,7 @@ type serviceProvider struct {
 	grpcConfig config.GRPCConfig
 
 	dbClient       db.Client
+	txManager      db.TxManager
 	noteRepository repository.NoteRepository
 
 	noteService service.NoteService
@@ -76,6 +78,14 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	return s.dbClient
 }
 
+func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
+	if s.txManager == nil {
+		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).DB())
+	}
+
+	return s.txManager
+}
+
 func (s *serviceProvider) NoteRepository(ctx context.Context) repository.NoteRepository {
 	if s.noteRepository == nil {
 		s.noteRepository = noteRepository.NewRepository(s.DBClient(ctx))
@@ -86,7 +96,10 @@ func (s *serviceProvider) NoteRepository(ctx context.Context) repository.NoteRep
 
 func (s *serviceProvider) NoteService(ctx context.Context) service.NoteService {
 	if s.noteService == nil {
-		s.noteService = noteService.NewService(s.NoteRepository(ctx))
+		s.noteService = noteService.NewService(
+			s.NoteRepository(ctx),
+			s.TxManager(ctx),
+		)
 	}
 
 	return s.noteService
